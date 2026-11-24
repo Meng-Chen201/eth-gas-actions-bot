@@ -1,0 +1,61 @@
+name: ETH Gas Read-Only Monitor
+
+on:
+  schedule:
+    # 每 15 分钟巡检一次（注：GitHub Actions 免费 Cron 存在 5-15 分钟调度漂移）
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+    inputs:
+      demo_spike:
+        description: "模拟 68.5 Gwei 尖峰压测（[SIMULATED SPIKE]）"
+        type: boolean
+        default: false
+        required: false
+
+# 并发锁：防止定时任务与手动触发同时回写 state/alert_state.json 导致冲突
+concurrency:
+  group: eth-gas-monitor-state
+  cancel-in-progress: false
+
+# [第 3 步 OBS 录屏复现 403 报错时，临时删掉下面这两行]
+permissions:
+  contents: write
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run Gas Monitor (Single Pass)
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          EXTRA_ARGS=""
+          if [ "${{ inputs.demo_spike }}" = "true" ]; then
+            EXTRA_ARGS="--demo-spike"
+          fi
+          python src/gas_tg_bot.py --once --state-file state/alert_state.json $EXTRA_ARGS
+
+      - name: Commit updated state if changed
+        run: |
+          if [ -z "$(git status --porcelain state/alert_state.json)" ]; then
+            echo "状态文件无变更，跳过 commit 避免污染提交历史。"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add state/alert_state.json
+          git commit -m "chore(state): update gas alert state [skip ci]"
+          git push

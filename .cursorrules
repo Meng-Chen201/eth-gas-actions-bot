@@ -1,0 +1,21 @@
+# AgentOnChain EP03 工程红线 (.cursorrules)
+
+你在协助维护 `eth-gas-actions-bot`（GitHub Actions 云端挂机版以太坊 Gas 只读告警机器人）时，必须严格遵守以下四条红线：
+
+1. **严格只读与零私钥红线**
+   - 仅允许通过公共 JSON-RPC 调用只读方法（`eth_blockNumber`、`eth_gasPrice`）。
+   - 严禁引入钱包私钥、助记词、交易签名、`eth_sendRawTransaction` 或任何需要私钥的 SDK（如 web3 签名模块）。
+   - 严禁添加币价预测、收益承诺或投资建议文案。
+
+2. **极简依赖与 Secrets 安全托管**
+   - Python 依赖仅限 `requests` 与标准库，禁止引入重型框架。
+   - `TELEGRAM_BOT_TOKEN` 与 `TELEGRAM_CHAT_ID` 必须通过环境变量或 GitHub Repository Secrets 注入，严禁硬编码到代码、YAML 或日志输出中。
+   - 未配置 Token 时必须自动降级为 Dry-Run（终端打印预览，不报错崩溃）。
+
+3. **跨轮状态持久化与防污染**
+   - 状态文件固定为 `state/alert_state.json`，记录 `last_level`、`last_alert_ts`、`last_block`、`last_gas_gwei`。
+   - 仅当告警级别变化或实际触发告警时才更新状态文件；无状态变更时必须跳过 `git commit`，禁止每次 Cron 轮询都产生无意义的提交记录。
+
+4. **GitHub Actions 最小权限与并发安全**
+   - 修复 `github-actions[bot]` 回写仓库 HTTP 403 报错时，仅允许授予最小必要权限：`permissions: contents: write`，严禁使用 `write-all` 或硬编码个人 PAT。
+   - Workflow 必须配置 `concurrency` 并发锁（`cancel-in-progress: false`），防止定时任务与手动触发并发写入冲突。

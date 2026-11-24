@@ -1,0 +1,34 @@
+# ==========================================
+# 白名单模式：默认忽略根目录及子目录所有文件
+# ==========================================
+*
+
+# 放行目录遍历（Git 需先放行目录才能匹配内部文件）
+!*/
+
+# 放行核心工程与配置文件
+!.gitignore
+!.cursorrules
+!README.md
+!LICENSE
+!requirements.txt
+
+# 放行源码目录
+!src/
+!src/*.py
+
+# 放行 GitHub Actions Workflow
+!.github/
+!.github/workflows/
+!.github/workflows/*.yml
+
+# 放行持久化状态目录（.gitkeep 与云端回写的 JSON）
+!state/
+!state/.gitkeep
+!state/alert_state.json
+
+# 显式兜底忽略敏感文件与 Python 编译缓存
+.env
+.env.*
+**/__pycache__/
+**/*.pyc
