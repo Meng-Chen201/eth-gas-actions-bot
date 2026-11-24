@@ -1,5 +1,7 @@
 name: ETH Gas Read-Only Monitor
 
+
+
 on:
   schedule:
     # 每 15 分钟巡检一次（注：GitHub Actions 免费 Cron 存在 5-15 分钟调度漂移）
@@ -12,12 +14,15 @@ on:
         default: false
         required: false
 
+
+
 # 并发锁：防止定时任务与手动触发同时回写 state/alert_state.json 导致冲突
 concurrency:
   group: eth-gas-monitor-state
   cancel-in-progress: false
 
-# [第 3 步 OBS 录屏复现 403 报错时，临时删掉下面这两行]
+permissions:
+  contents: write
 
 
 jobs:
