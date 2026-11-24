@@ -18,8 +18,7 @@ concurrency:
   cancel-in-progress: false
 
 # [第 3 步 OBS 录屏复现 403 报错时，临时删掉下面这两行]
-permissions:
-  contents: write
+
 
 jobs:
   monitor:
