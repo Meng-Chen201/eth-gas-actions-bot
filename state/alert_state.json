@@ -1,7 +1,7 @@
 {
-  "last_level": "HIGH",
-  "last_alert_ts": 1795525676,
-  "last_block": 26485214,
-  "last_gas_gwei": 68.5,
-  "updated_at_utc": "2026-11-24 13:07:57 UTC"
+  "last_level": "LOW",
+  "last_alert_ts": 1795546800,
+  "last_block": 26486968,
+  "last_gas_gwei": 0.35,
+  "updated_at_utc": "2026-11-24 19:00:01 UTC"
 }
